@@ -1,5 +1,3 @@
-# Prime-uit-dsc-2025
-
 ## 📌 Tóm tắt dự án
 
 Dự án này xây dựng hệ thống phân loại response dựa trên **Student–Teacher Framework**:
