@@ -14,6 +14,14 @@ Cách tiếp cận này giúp tăng độ chính xác bằng cách tận dụng 
 
 ---
 
+## 🧠 Model
+
+- Base model: **Qwen/Qwen3-4B-Instruct-2507**  
+- Student và Teacher đều được fine-tune từ mô hình này.  
+- Mục tiêu: phân loại response theo cơ chế Student–Teacher framework.
+
+---
+
 ## 🧩 Ánh xạ nhãn Student → Teacher
 
 Mỗi Student phụ trách một khía cạnh nhỏ, sau đó ánh xạ về nhãn cuối cùng của **Teacher** (3 nhãn: **no, intrinsic, extrinsic**):
