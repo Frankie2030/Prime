@@ -16,6 +16,52 @@ Cách tiếp cận này giúp tăng độ chính xác bằng cách tận dụng 
 
 ---
 
+## 🧩 Ánh xạ nhãn Student → Teacher
+
+Mỗi Student phụ trách một khía cạnh nhỏ, sau đó ánh xạ về nhãn cuối cùng của **Teacher** (3 nhãn: **no, intrinsic, extrinsic**):
+
+- **Student 1 (yes/no):**  
+  - `yes` → **extrinsic** hoặc **intrinsic**  
+  - `no` → **no**
+
+- **Student 2 (known/unknown):**  
+  - `known` → **no** hoặc **intrinsic**  
+  - `unknown` → **extrinsic**
+
+- **Student 3 (support/contradictory):**  
+  - `support` → **no** hoặc **extrinsic**  
+  - `contradictory` → **intrinsic**
+
+---
+
+### 🔑 Quy tắc đồng thuận
+Hệ thống kiểm tra kết quả của cả 3 Student. Nếu đồng thuận theo các tổ hợp sau thì lấy kết quả trực tiếp từ Student:
+
+1. **Dự đoán "no"**  
+   - Student 1 → `no`  
+   - Student 2 → `known`  
+   - Student 3 → `support`  
+   ⇒ Kết quả cuối: **no**
+
+2. **Dự đoán "extrinsic"**  
+   - Student 1 → `yes`  
+   - Student 2 → `unknown`  
+   - Student 3 → `support`  
+   ⇒ Kết quả cuối: **extrinsic**
+
+3. **Dự đoán "intrinsic"**  
+   - Student 1 → `yes`  
+   - Student 2 → `known`  
+   - Student 3 → `contradictory`  
+   ⇒ Kết quả cuối: **intrinsic**
+
+---
+
+### 📌 Khi không đồng thuận
+Nếu kết quả từ 3 Student **không rơi vào một trong 3 trường hợp trên**, hệ thống sẽ **lấy nhãn dự đoán từ Teacher model** làm kết quả cuối cùng.
+
+---
+
 ## 📂 Cấu trúc Project
 
 Project được tổ chức thành 2 phần chính:
@@ -88,50 +134,41 @@ Toàn bộ project được triển khai trong **Kaggle Notebook** environment s
 
 ---
 
-## 🧩 Ánh xạ nhãn Student → Teacher
+## ⚙️ Tham số huấn luyện
 
-Mỗi Student phụ trách một khía cạnh nhỏ, sau đó ánh xạ về nhãn cuối cùng của **Teacher** (3 nhãn: **no, intrinsic, extrinsic**):
+Dự án sử dụng `Trainer` của HuggingFace với một số cấu hình quan trọng:
 
-- **Student 1 (yes/no):**  
-  - `yes` → **extrinsic** hoặc **intrinsic**  
-  - `no` → **no**
+- **Epochs & Batch size**
+  - `num_train_epochs=1`: Mỗi lần train chỉ 1 epoch, sau đó resume tiếp → giúp kiểm soát tài nguyên.
+  - `per_device_train_batch_size=1`, `gradient_accumulation_steps=16` → batch hiệu quả ~16, cân bằng giữa bộ nhớ và tốc độ.
 
-- **Student 2 (known/unknown):**  
-  - `known` → **no** hoặc **intrinsic**  
-  - `unknown` → **extrinsic**
+- **Logging & Evaluation**
+  - `logging_steps=20`: log vừa phải, tránh quá dày đặc.
+  - `eval_strategy="epoch"`, `save_strategy="epoch"`: đánh giá và lưu mô hình sau mỗi epoch.
+  - `load_best_model_at_end=True`: tự động chọn checkpoint tốt nhất theo metric `f1`.
 
-- **Student 3 (support/contradictory):**  
-  - `support` → **no** hoặc **extrinsic**  
-  - `contradictory` → **intrinsic**
+- **Tối ưu hóa**
+  - `learning_rate=3e-4`, `weight_decay=0.01`: tốc độ học vừa phải với regularization nhẹ.
+  - `lr_scheduler_type="cosine"`, `warmup_ratio=0.03`: lịch giảm LR theo cosine, có warmup để ổn định training.
+  - `optim="paged_adamw_8bit"`: tối ưu hóa bộ nhớ bằng AdamW 8-bit.
+  - `fp16=True`: huấn luyện nửa chính xác (mixed precision) để tăng tốc và giảm VRAM.
 
----
-
-### 🔑 Quy tắc đồng thuận
-Hệ thống kiểm tra kết quả của cả 3 Student. Nếu đồng thuận theo các tổ hợp sau thì lấy kết quả trực tiếp từ Student:
-
-1. **Dự đoán "no"**  
-   - Student 1 → `no`  
-   - Student 2 → `known`  
-   - Student 3 → `support`  
-   ⇒ Kết quả cuối: **no**
-
-2. **Dự đoán "extrinsic"**  
-   - Student 1 → `yes`  
-   - Student 2 → `unknown`  
-   - Student 3 → `support`  
-   ⇒ Kết quả cuối: **extrinsic**
-
-3. **Dự đoán "intrinsic"**  
-   - Student 1 → `yes`  
-   - Student 2 → `known`  
-   - Student 3 → `contradictory`  
-   ⇒ Kết quả cuối: **intrinsic**
+- **Hiệu năng**
+  - `dataloader_num_workers=2`, `dataloader_pin_memory=True`: cải thiện I/O trên GPU.
+  - `group_by_length=True`: gom mẫu có độ dài gần nhau → giảm padding → training nhanh và ổn định hơn.
 
 ---
 
-### 📌 Khi không đồng thuận
-Nếu kết quả từ 3 Student **không rơi vào một trong 3 trường hợp trên**, hệ thống sẽ **lấy nhãn dự đoán từ Teacher model** làm kết quả cuối cùng.
+## 🔮 Tham số inference
 
+Trong quá trình sinh output (`model.generate`):
+
+- `max_new_tokens`: số token tối đa cần sinh.  
+- `do_sample=False, temperature=0.0`: sinh **deterministic** (greedy search), đảm bảo tính nhất quán khi đánh giá.  
+- `pad_token_id=tokenizer.eos_token_id`: dùng token EOS để pad, tránh lỗi padding.  
+- `eos_token_id=[tokenizer.eos_token_id]`: dừng sinh khi gặp token kết thúc câu.
+
+⚡ Thiết lập inference này đảm bảo kết quả **tái lập (reproducible)** và **ổn định** giữa các lần chạy, điều rất quan trọng trong bối cảnh kiểm tra tính consistency của hệ thống.
 
 ---
 
