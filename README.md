@@ -155,6 +155,10 @@ Dự án sử dụng `Trainer` của HuggingFace với một số cấu hình qu
   - `dataloader_num_workers=2`, `dataloader_pin_memory=True`: cải thiện I/O trên GPU.
   - `group_by_length=True`: gom mẫu có độ dài gần nhau → giảm padding → training nhanh và ổn định hơn.
 
+- Thời gian huấn luyện: 5-6 tiếng trên môi trường Kaggle Notebook, GPU P100.
+
+- Prerequisites: Sử dụng môi trường notebook trên Kaggle/Colab hoặc các môi trường với thông số CPU, GPU, RAM, VRAM... tương tự.
+
 ---
 
 ## 🔮 Tham số inference
@@ -167,6 +171,8 @@ Trong quá trình sinh output (`model.generate`):
 - `eos_token_id=[tokenizer.eos_token_id]`: dừng sinh khi gặp token kết thúc câu.
 
 ⚡ Thiết lập inference này đảm bảo kết quả **tái lập (reproducible)** và **ổn định** giữa các lần chạy, điều rất quan trọng trong bối cảnh kiểm tra tính consistency của hệ thống.
+
+- Prerequisites: Sử dụng môi trường notebook trên Kaggle/Colab hoặc các môi trường với thông số CPU, GPU, RAM, VRAM... tương tự.
 
 ---
 
