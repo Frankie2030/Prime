@@ -191,3 +191,11 @@ Trong quá trình sinh output (`model.generate`):
 - Kết quả so sánh cho thấy: chỉ có **1/2000 dòng bị thay đổi**.
   - Nguyên nhân có thể đến từ sự ngẫu nhiên hoặc đặc tính của LLM.
   - Tuy nhiên, việc chỉ thay đổi **1 dòng trên tổng 2000** chứng minh rằng hệ thống có **tính ổn định và consistency cao**.
+ 
+## Leaderboard
+- Public Test: Macro-F1 = 0.8318
+- Private Test:
+  - Macro-F1 = 0.8401
+  - Ranking: Top 7/222
+<img width="2844" height="1668" alt="image" src="https://github.com/user-attachments/assets/2226891e-dd0a-47ae-af46-dc1c4f325bba" />
+
